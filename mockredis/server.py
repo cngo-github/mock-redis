@@ -46,3 +46,6 @@ class Redis(threading.Thread):
     def stop(self):
         self.is_alive = False
         self.join()
+
+    def clear_all(self):
+        self.channels.clear()
