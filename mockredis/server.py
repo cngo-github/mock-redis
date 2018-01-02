@@ -17,14 +17,23 @@ class Redis(threading.Thread):
         self.server.bind((address, port))
         self.channels = collections.defaultdict(list)
         self.is_alive = True
+
+        self.__curconn = None
         self.__reader = hiredis.Reader()
 
         super().__init__()
 
-    def _process_commands(self, addr, *args):
+    def _process_commands(self, addr, *args, conn=None):
         command = args[0].decode('utf-8').lower()
 
-        if command == 'subscribe':
+        if command == 'ping':
+            try:
+                self.__curconn.sendall(b'PONG')
+            except (AttributeError, socket.timeout):
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sck:
+                    sck.connect(addr)
+                    sck.sendall(b'PONG')
+        elif command == 'subscribe':
             for elem in args[1:]:
                 elem = elem.decode('utf-8')
                 self.channels[elem] = addr
@@ -42,6 +51,7 @@ class Redis(threading.Thread):
     def run(self):
         while self.is_alive:
             conn, addr = self.server.accept()
+            self.__curconn = conn
             with conn:
                 data = conn.recv(65536)
                 if not data:
