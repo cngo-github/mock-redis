@@ -23,20 +23,27 @@ class Redis(threading.Thread):
 
         super().__init__()
 
-    def _process_commands(self, addr, *args, conn=None):
+    def _process_commands(self, conn, addr, *args):
         command = args[0].decode('utf-8').lower()
 
         if command == 'ping':
             try:
-                self.__curconn.sendall(b'PONG')
-            except (AttributeError, socket.timeout):
+                conn.sendall(b'PONG')
+            except socket.timeout:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sck:
                     sck.connect(addr)
                     sck.sendall(b'PONG')
         elif command == 'subscribe':
+            sub_count = 0
             for elem in args[1:]:
                 elem = elem.decode('utf-8')
                 self.channels[elem] = addr
+                sub_count += 1
+
+            try:
+                conn.sendall(sub_count)
+            except socket.timeout:
+                pass
         elif command == 'published':
             if args[1].decode('utf-8') in self.channels:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sck:
@@ -51,7 +58,6 @@ class Redis(threading.Thread):
     def run(self):
         while self.is_alive:
             conn, addr = self.server.accept()
-            self.__curconn = conn
             with conn:
                 data = conn.recv(65536)
                 if not data:
@@ -59,7 +65,7 @@ class Redis(threading.Thread):
 
                 self.__reader.feed(data)
                 data = self.__reader.gets()
-                self._process_commands(addr, *data)
+                self._process_commands(conn, addr, *data)
 
     def stop(self):
         self.is_alive = False
