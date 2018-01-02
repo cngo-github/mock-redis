@@ -10,8 +10,8 @@ import pytest
 
 @pytest.fixture
 def redisserver(request):
-    from pytest_mockredis import server
-    server = server.Redis()
+    from pytest_mockredis.server import Redis
+    server = Redis()
     server.start()
     request.addfinalizer(server.stop)
     return server
