@@ -9,7 +9,7 @@ version_line = [line for line in open(module_path)
 __version__ = version_line.split('__version__ = ')[-1][1:][:-2]
 
 setuptools.setup(
-    name='mockredis',
+    name='pytest-mockredis',
     version=__version__,
     url='https://github.com/cngo-github/mock-redis',
 
