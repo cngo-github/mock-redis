@@ -2,7 +2,7 @@ import os
 
 import setuptools
 
-module_path = os.path.join(os.path.dirname(__file__), 'pytest-mockredis', '__init__.py')
+module_path = os.path.join(os.path.dirname(__file__), 'pytest_mockredis', '__init__.py')
 version_line = [line for line in open(module_path)
                 if line.startswith('__version__')][0]
 
