@@ -1,3 +1,10 @@
+# -*- coding: utf8 -*-
+#
+# Copyright (C) 2011 Sebastian Rahlf <basti at redtoad dot de>
+#
+# This program is release under the MIT license. You can find the full text of
+# the license in the LICENSE file.
+
 import threading
 import collections
 import socket
@@ -28,6 +35,7 @@ class Redis(threading.Thread):
                     sck.sendall(args[2])
 
     def start(self):
+        self.is_alive = True
         self.server.listen()
         super().start()
 
@@ -45,6 +53,7 @@ class Redis(threading.Thread):
 
     def stop(self):
         self.is_alive = False
+        self.clear_all()
         self.join()
 
     def clear_all(self):
